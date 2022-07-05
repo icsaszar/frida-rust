@@ -10,7 +10,7 @@ use std::marker::PhantomData;
 use std::os::raw::c_void;
 
 /// Represents a pair of listeners attached to a function.
-pub trait InvocationListener {
+pub trait InvocationListener: Sync {
     /// Called when the attached function is entered.
     fn on_enter(&mut self, context: InvocationContext);
     /// Called before the attached function is exited.
@@ -34,10 +34,10 @@ unsafe extern "C" fn call_on_leave<I: InvocationListener>(
 }
 
 pub(crate) fn invocation_listener_transform<I: InvocationListener>(
-    invocation_listener: &mut I,
+    invocation_listener: &I,
 ) -> *mut frida_gum_sys::GumInvocationListener {
     let rust = frida_gum_sys::RustInvocationListenerVTable {
-        user_data: invocation_listener as *mut _ as *mut c_void,
+        user_data: invocation_listener as *const _ as *mut c_void,
         on_enter: Some(call_on_enter::<I>),
         on_leave: Some(call_on_leave::<I>),
     };

@@ -53,7 +53,7 @@ impl<'a> Interceptor<'a> {
     pub fn attach<I: InvocationListener>(
         &mut self,
         f: NativePointer,
-        listener: &mut I,
+        listener: &'static I,
     ) -> NativePointer {
         let listener = invocation_listener_transform(listener);
         unsafe {
